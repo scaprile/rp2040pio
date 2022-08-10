@@ -1088,6 +1088,7 @@ public abstract class Instruction
     private boolean clr;
     private boolean wait;
     private int index;
+	private boolean irq_set;
 
     @Override
     protected void resetParams()
@@ -1095,6 +1096,7 @@ public abstract class Instruction
       clr = false;
       wait = false;
       index = 0;
+      irq_set = false;
     }
 
     @Override
@@ -1118,10 +1120,13 @@ public abstract class Instruction
       if (clr) {
         sm.clearIRQ(irqNum);
         stall = false;
-      } else {
+      } else if (!irq_set) {
         sm.setIRQ(irqNum);
         stall = wait;
+      } else {
+        stall = (sm.getIRQ(irqNum) == Bit.HIGH);
       }
+      irq_set = stall;
       return stall ? ResultState.STALL : ResultState.COMPLETE;
     }
 
